@@ -3,6 +3,7 @@
 builder.Services.AddServiceModelServices();
 builder.Services.AddServiceModelMetadata();
 builder.Services.AddSingleton<IServiceBehavior, UseRequestHeadersForMetadataAddressBehavior>();
+builder.Services.AddSingleton<GatewayService> ();
 
 var app = builder.Build();
 

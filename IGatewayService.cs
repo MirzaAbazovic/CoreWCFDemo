@@ -1,8 +1,4 @@
-﻿using CoreWCF;
-using System;
-using System.Runtime.Serialization;
-
-namespace EccGw
+﻿namespace EccGw
 {
     [ServiceContract(Namespace = "http://saga.rs/ncts/services")]
     public interface IGatewayService
@@ -24,30 +20,39 @@ namespace EccGw
     }
 
 
-    public class GatewayService : IGatewayService
+    public class GatewayService(ILogger<GatewayService> log) : IGatewayService
     {
         public string Confirm(string envelope)
         {
-            throw new NotImplementedException();
+            log.LogInformation("Method Confirm with envelope: {envelope}", envelope);
+            return envelope;
         }
 
         public string Deliver(string envelope)
         {
+            log.LogInformation("Method Deliver with envelope: {envelope}", envelope);
             return envelope;
         }
 
         public string Pool(string communicationAuthorizationId, string communicationDomain, string password)
         {
+            log.LogInformation(
+                "Method Pool with communicationAuthorizationId: {authId}, communicationDomain: {commDomain}, password: {pass}",
+                communicationAuthorizationId, communicationDomain, password);
             return $"{communicationAuthorizationId}:{communicationDomain}: {password}";
         }
 
         public string PoolPwc(string communicationAuthorizationId, string communicationDomain, string password)
         {
-            return string.Join(":", new List<string> { communicationAuthorizationId, communicationDomain, password });
+            log.LogInformation(
+                "Method PoolPWC with communicationAuthorizationId: {authId}, communicationDomain: {commDomain}, password: {pass}",
+                communicationAuthorizationId, communicationDomain, password);
+            return $"{communicationAuthorizationId}:{communicationDomain}: {password}";
         }
 
         public string Send(string envelope)
         {
+            log.LogInformation("Method Send with envelope: {envelope}", envelope);
             return envelope;
         }
     }
