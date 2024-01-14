@@ -1,4 +1,7 @@
-﻿namespace EccGw
+﻿using System.Reflection;
+using System.Text;
+
+namespace EccGw
 {
     [ServiceContract(Namespace = "http://saga.rs/ncts/services")]
     public interface IGatewayService
@@ -19,41 +22,57 @@
         string PoolPwc(string communicationAuthorizationId, string communicationDomain, string password);
     }
 
-
-    public class GatewayService(ILogger<GatewayService> log) : IGatewayService
+    public partial class GatewayService(ILogger<GatewayService> log) : IGatewayService
     {
-        public string Confirm(string envelope)
+        public string Confirm(string envelope,
+            [Injected] HttpRequest req, [Injected] HttpResponse res)
         {
-            log.LogInformation("Method Confirm with envelope: {envelope}", envelope);
+            LogMethodCall(MethodBase.GetCurrentMethod(), envelope, req, res);
             return envelope;
         }
 
-        public string Deliver(string envelope)
+        public string Deliver(string envelope,
+            [Injected] HttpRequest req, [Injected] HttpResponse res)
         {
-            log.LogInformation("Method Deliver with envelope: {envelope}", envelope);
+            LogMethodCall(MethodBase.GetCurrentMethod(), envelope, req, res);
             return envelope;
         }
 
-        public string Pool(string communicationAuthorizationId, string communicationDomain, string password)
+        public string Pool(string communicationAuthorizationId, string communicationDomain, string password,
+            [Injected] HttpRequest req, [Injected] HttpResponse res)
         {
+            var payload = $"{communicationAuthorizationId}:{communicationDomain}:{password}";
+            LogMethodCall(MethodBase.GetCurrentMethod(), payload, req, res);
+            return payload;
+        }
+
+        public string PoolPwc(string communicationAuthorizationId, string communicationDomain, string password,
+            [Injected] HttpRequest req, [Injected] HttpResponse res)
+        {
+            var payload = $"{communicationAuthorizationId}:{communicationDomain}:{password}";
+            LogMethodCall(MethodBase.GetCurrentMethod(), payload, req, res);
+            return payload;
+        }
+
+        public string Send(string envelope,
+            [Injected] HttpRequest req, [Injected] HttpResponse res)
+        {
+            LogMethodCall(MethodBase.GetCurrentMethod(), envelope, req, res);
+            return envelope;
+        }
+
+        private void LogMethodCall(MethodBase? method, string payload, HttpRequest req, HttpResponse res)
+        {
+            var headersSb = new StringBuilder();
+            foreach (var (key, value) in req.Headers)
+            {
+                headersSb.AppendLine($"{key}:{value}");
+            }
+
             log.LogInformation(
-                "Method Pool with communicationAuthorizationId: {authId}, communicationDomain: {commDomain}, password: {pass}",
-                communicationAuthorizationId, communicationDomain, password);
-            return $"{communicationAuthorizationId}:{communicationDomain}: {password}";
-        }
-
-        public string PoolPwc(string communicationAuthorizationId, string communicationDomain, string password)
-        {
-            log.LogInformation(
-                "Method PoolPWC with communicationAuthorizationId: {authId}, communicationDomain: {commDomain}, password: {pass}",
-                communicationAuthorizationId, communicationDomain, password);
-            return $"{communicationAuthorizationId}:{communicationDomain}: {password}";
-        }
-
-        public string Send(string envelope)
-        {
-            log.LogInformation("Method Send with envelope: {envelope}", envelope);
-            return envelope;
+                $"Called method {method!.Name} with payload: {payload}\n" +
+                $"Request headers: {headersSb}, " +
+                $"Response status code {res.StatusCode}");
         }
     }
 }
